@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git & VS Code — Complete Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --card: #1a1e2a;
+    --border: #252a38;
+    --accent: #4af0a2;
+    --accent2: #7b6ef6;
+    --accent3: #f0a24a;
+    --accent4: #f06a6a;
+    --text: #e4e8f0;
+    --muted: #6b7490;
+    --code-bg: #0a0c11;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,240,162,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,240,162,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 60px 20px 40px;
+    background: linear-gradient(180deg, rgba(74,240,162,0.06) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background: rgba(74,240,162,0.1);
+    border: 1px solid rgba(74,240,162,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 span.git { color: var(--accent3); }
+  .hero h1 span.vs { color: var(--accent2); }
+
+  .hero p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 500px;
+    margin: 0 auto 30px;
+  }
+
+  /* Tab nav */
+  .nav {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+  }
+
+  .nav-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .nav-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+
+  /* Content */
+  .content {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .section-title h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .section-title p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 14px; }
+
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .step:hover { border-color: #354060; }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-title {
+    font-size: 15px;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .step-toggle {
+    color: var(--muted);
+    font-size: 18px;
+    transition: transform 0.2s;
+    line-height: 1;
+  }
+
+  .step.open .step-toggle { transform: rotate(45deg); }
+
+  .step-body {
+    display: none;
+    padding: 0 18px 18px;
+  }
+
+  .step.open .step-body { display: block; }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  /* Code block */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 10px 0;
+    position: relative;
+  }
+
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .code-block code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    display: block;
+    white-space: pre;
+  }
+
+  .code-block code .cmd { color: var(--accent); }
+  .code-block code .arg { color: var(--accent3); }
+  .code-block code .comment { color: #444c6b; }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--border);
+    border: none;
+    border-radius: 5px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { background: var(--accent); color: #000; }
+
+  /* UI tip */
+  .ui-tip {
+    background: rgba(123,110,246,0.08);
+    border: 1px solid rgba(123,110,246,0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #a89ff5;
+    margin: 10px 0;
+    line-height: 1.6;
+  }
+
+  .ui-tip::before {
+    content: '🖱 VS Code UI: ';
+    font-weight: 700;
+    color: var(--accent2);
+  }
+
+  .warn-tip {
+    background: rgba(240,162,74,0.08);
+    border: 1px solid rgba(240,162,74,0.2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #d4a060;
+    margin: 10px 0;
+    line-height: 1.6;
+  }
+
+  .warn-tip::before {
+    content: '⚠ Note: ';
+    font-weight: 700;
+  }
+
+  .sub-steps {
+    margin: 10px 0;
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sub-steps li {
+    font-size: 13px;
+    color: var(--muted);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .sub-steps li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Color variants per section */
+  .clr-green .step-num { background: rgba(74,240,162,0.12); color: var(--accent); }
+  .clr-purple .step-num { background: rgba(123,110,246,0.12); color: var(--accent2); }
+  .clr-orange .step-num { background: rgba(240,162,74,0.12); color: var(--accent3); }
+  .clr-red .step-num { background: rgba(240,106,106,0.12); color: var(--accent4); }
+
+  .clr-green .section-icon { background: rgba(74,240,162,0.12); }
+  .clr-purple .section-icon { background: rgba(123,110,246,0.12); }
+  .clr-orange .section-icon { background: rgba(240,162,74,0.12); }
+  .clr-red .section-icon { background: rgba(240,106,106,0.12); }
+
+  /* Cheatsheet table */
+  .cheat-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .cheat-table th {
+    text-align: left;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cheat-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid #1e2330;
+    vertical-align: top;
+  }
+  .cheat-table tr:last-child td { border-bottom: none; }
+  .cheat-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    white-space: nowrap;
+    width: 42%;
+  }
+  .cheat-table td:last-child { color: var(--muted); line-height: 1.5; }
+
+  /* Kbd */
+  kbd {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 600px) {
+    .nav { gap: 4px; padding: 12px; }
+    .nav-btn { font-size: 10px; padding: 5px 10px; }
+    .hero { padding: 40px 16px 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">Complete Reference</div>
+  <h1><span class="git">Git</span> + <span class="vs">VS Code</span><br>Step-by-Step Guide</h1>
+  <p>Everything from setup to collaboration — terminal commands and VS Code UI paths included.</p>
+</div>
+
+<nav class="nav" id="nav">
+  <button class="nav-btn active" onclick="show('setup', this)">⚙ Setup</button>
+  <button class="nav-btn" onclick="show('basics', this)">📦 Add & Commit</button>
+  <button class="nav-btn" onclick="show('remote', this)">🌐 Push & Pull</button>
+  <button class="nav-btn" onclick="show('branches', this)">🌿 Branch & Merge</button>
+  <button class="nav-btn" onclick="show('rebase', this)">🔀 Rebase</button>
+  <button class="nav-btn" onclick="show('clone', this)">📋 Clone & Fork</button>
+  <button class="nav-btn" onclick="show('collab', this)">👥 Collaborate</button>
+  <button class="nav-btn" onclick="show('account', this)">🔑 Account</button>
+  <button class="nav-btn" onclick="show('cheat', this)">⚡ Cheatsheet</button>
+</nav>
+
+<div class="content">
+
+  <!-- SETUP -->
+  <div class="section active clr-green" id="setup">
+    <div class="section-title">
+      <div class="section-icon">⚙</div>
+      <div>
+        <h2>Initial Setup</h2>
+        <p>Install Git & connect it to VS Code</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Install Git on your computer</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Download and install Git before anything else. VS Code will detect it automatically.</p>
+          <ul class="sub-steps">
+            <li>Go to <strong>git-scm.com</strong> and download for your OS (Windows/Mac/Linux)</li>
+            <li>Run the installer — keep all default options</li>
+            <li>Verify in terminal: type <code style="color:var(--accent);font-family:JetBrains Mono">git --version</code></li>
+          </ul>
+          <div class="code-block">
+            <div class="code-label">Terminal — verify install</div>
+            <code>git --version
+<span class="comment"># Output: git version 2.44.0</span></code>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Configure your identity</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Git tags every commit with your name and email. Set this once globally.</p>
+          <div class="code-block">
+            <div class="code-label">Terminal</div>
+            <code>git config --global user.name <span class="arg">"Your Name"</span>
+git config --global user.email <span class="arg">"you@example.com"</span></code>
+          </div>
+          <div class="ui-tip">In VS Code: open terminal with <kbd>Ctrl+`</kbd> (Windows/Linux) or <kbd>Cmd+`</kbd> (Mac) and run the commands above.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Initialize a Git repo in VS Code</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Turn any folder into a Git repository.</p>
+          <div class="code-block">
+            <div class="code-label">Terminal — inside your project folder</div>
+            <code>git init</code>
+          </div>
+          <div class="ui-tip">In VS Code: open the <strong>Source Control</strong> panel (left sidebar icon or <kbd>Ctrl+Shift+G</kbd>) → click <strong>"Initialize Repository"</strong>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD & COMMIT -->
+  <div class="section clr-purple" id="basics">
+    <div class="section-title">
+      <div class="section-icon">📦</div>
+      <div>
+        <h2>Add & Commit</h2>
+        <p>Stage your changes and save snapshots</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Check what's changed — git status</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Always check what files are modified before staging.</p>
+          <div class="code-block"><code>git status</code></div>
+          <div class="ui-tip">Source Control panel shows all changed files automatically — red = untracked, orange = modified.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Stage files — git add</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Staging tells Git which changes to include in the next commit.</p>
+          <div class="code-block">
+            <div class="code-label">Stage a specific file</div>
+            <code>git add <span class="arg">filename.txt</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Stage ALL changed files</div>
+            <code>git add .</code>
+          </div>
+          <div class="ui-tip">In Source Control panel: hover a file → click the <strong>+</strong> icon to stage it. Or click <strong>+</strong> next to "Changes" to stage all.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Commit — git commit</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">A commit saves a permanent snapshot of your staged changes.</p>
+          <div class="code-block">
+            <div class="code-label">Commit with a message</div>
+            <code>git commit -m <span class="arg">"Your commit message"</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Stage + commit in one step (tracked files only)</div>
+            <code>git commit -am <span class="arg">"Your message"</span></code>
+          </div>
+          <div class="ui-tip">In Source Control panel: type your message in the box at the top → click the <strong>✓ Commit</strong> button (or press <kbd>Ctrl+Enter</kbd>).</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">View commit history — git log</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <div class="code-block">
+            <div class="code-label">Pretty one-line log</div>
+            <code>git log --oneline --graph</code>
+          </div>
+          <div class="ui-tip">Install the <strong>GitLens</strong> extension in VS Code for a beautiful visual history in the sidebar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUSH & PULL -->
+  <div class="section clr-orange" id="remote">
+    <div class="section-title">
+      <div class="section-icon">🌐</div>
+      <div>
+        <h2>Push & Pull</h2>
+        <p>Sync your code with a remote repository (GitHub/GitLab)</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Connect a remote repository</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Link your local repo to a GitHub/GitLab remote. Do this once per project.</p>
+          <div class="code-block">
+            <div class="code-label">Add remote named "origin"</div>
+            <code>git remote add origin <span class="arg">https://github.com/user/repo.git</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Verify it's connected</div>
+            <code>git remote -v</code>
+          </div>
+          <div class="ui-tip">In VS Code Source Control panel: click the <strong>···</strong> menu → <strong>Remote → Add Remote</strong> → paste your GitHub URL.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Push changes — git push</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Upload your local commits to GitHub.</p>
+          <div class="code-block">
+            <div class="code-label">First push (sets upstream)</div>
+            <code>git push -u origin <span class="arg">main</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">All future pushes (after upstream is set)</div>
+            <code>git push</code>
+          </div>
+          <div class="ui-tip">In VS Code: click <strong>Sync Changes</strong> button in the Source Control panel (bottom status bar also shows ↑ push icon).</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Pull changes — git pull</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Download the latest commits from the remote to your local machine.</p>
+          <div class="code-block"><code>git pull</code></div>
+          <div class="code-block">
+            <div class="code-label">Pull from a specific branch</div>
+            <code>git pull origin <span class="arg">main</span></code>
+          </div>
+          <div class="ui-tip">In VS Code: Source Control panel → <strong>···</strong> menu → <strong>Pull</strong>. Or click the ↓ arrow in the bottom status bar.</div>
+          <div class="warn-tip">Always pull before you start working to avoid merge conflicts with teammates.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">Fetch (without merging) — git fetch</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Download remote changes but don't merge them yet — good for previewing what changed.</p>
+          <div class="code-block"><code>git fetch origin</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BRANCHES & MERGE -->
+  <div class="section clr-green" id="branches">
+    <div class="section-title">
+      <div class="section-icon">🌿</div>
+      <div>
+        <h2>Branch & Merge</h2>
+        <p>Work on features in isolation, then combine them</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Create a new branch</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Always create a new branch for each feature or bug fix — never commit directly to main.</p>
+          <div class="code-block">
+            <div class="code-label">Create and switch to new branch in one step</div>
+            <code>git checkout -b <span class="arg">feature/my-feature</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">List all branches</div>
+            <code>git branch</code>
+          </div>
+          <div class="ui-tip">In VS Code: click the branch name in the <strong>bottom-left status bar</strong> → <strong>"Create new branch"</strong> → type a name.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Switch between branches — git checkout</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <div class="code-block"><code>git checkout <span class="arg">main</span></code></div>
+          <div class="ui-tip">In VS Code: click the branch name in the bottom-left status bar → select a branch from the list.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Merge a branch — git merge</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Bring changes from one branch into another. First switch to the target branch (e.g. main), then merge.</p>
+          <div class="code-block">
+            <div class="code-label">Switch to main, then merge feature branch</div>
+            <code>git checkout <span class="arg">main</span>
+git merge <span class="arg">feature/my-feature</span></code>
+          </div>
+          <div class="ui-tip">In VS Code: Source Control → <strong>···</strong> → <strong>Branch → Merge Branch</strong> → pick the branch to merge in.</div>
+          <div class="warn-tip">If there are conflicts, VS Code shows them inline with Accept Current / Accept Incoming / Accept Both options. Resolve all conflicts, then commit.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">Delete a branch (after merging)</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <div class="code-block">
+            <div class="code-label">Delete local branch</div>
+            <code>git branch -d <span class="arg">feature/my-feature</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Delete remote branch</div>
+            <code>git push origin --delete <span class="arg">feature/my-feature</span></code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REBASE -->
+  <div class="section clr-purple" id="rebase">
+    <div class="section-title">
+      <div class="section-icon">🔀</div>
+      <div>
+        <h2>Rebase</h2>
+        <p>Rewrite commit history for a cleaner project log</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">What is rebase?</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Rebase moves your branch's commits to the tip of another branch, creating a straight linear history instead of a messy merge commit. Think of it as "replaying" your work on top of the latest main.</p>
+          <div class="warn-tip">Never rebase branches that others are working on. Only rebase your own local/feature branches.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Rebase your feature branch onto main</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">This updates your feature branch with the latest commits from main.</p>
+          <div class="code-block">
+            <div class="code-label">While on your feature branch</div>
+            <code><span class="comment"># Switch to your feature branch first</span>
+git checkout <span class="arg">feature/my-feature</span>
+
+<span class="comment"># Rebase onto latest main</span>
+git rebase <span class="arg">main</span></code>
+          </div>
+          <div class="ui-tip">In VS Code: Source Control → <strong>···</strong> → <strong>Branch → Rebase Branch</strong> → select main.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Resolve rebase conflicts</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">If conflicts occur during rebase, VS Code highlights them. Fix them, then continue.</p>
+          <div class="code-block">
+            <div class="code-label">After fixing conflicts in VS Code</div>
+            <code>git add <span class="arg">conflicted-file.txt</span>
+git rebase --continue</code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Abort and go back to before rebase</div>
+            <code>git rebase --abort</code>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">Interactive rebase — clean up commits</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Squash multiple commits into one, edit messages, or reorder before pushing.</p>
+          <div class="code-block">
+            <div class="code-label">Interactively edit the last 3 commits</div>
+            <code>git rebase -i HEAD~3</code>
+          </div>
+          <ul class="sub-steps">
+            <li>In the editor that opens, change <code style="color:var(--accent);font-family:monospace">pick</code> to <code style="color:var(--accent3);font-family:monospace">squash</code> to combine commits</li>
+            <li>Change to <code style="color:var(--accent3);font-family:monospace">reword</code> to edit a commit message</li>
+            <li>Save and close the file to apply</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLONE & FORK -->
+  <div class="section clr-orange" id="clone">
+    <div class="section-title">
+      <div class="section-icon">📋</div>
+      <div>
+        <h2>Clone & Fork</h2>
+        <p>Copy repositories to work on them locally</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Clone a repository — git clone</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Downloads a full copy of a remote repository to your computer.</p>
+          <div class="code-block">
+            <div class="code-label">Clone via HTTPS</div>
+            <code>git clone <span class="arg">https://github.com/user/repo.git</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Clone into a specific folder name</div>
+            <code>git clone <span class="arg">https://github.com/user/repo.git</span> <span class="arg">my-folder</span></code>
+          </div>
+          <div class="ui-tip">In VS Code: press <kbd>Ctrl+Shift+P</kbd> → type <strong>"Git: Clone"</strong> → paste the repo URL → choose a folder. VS Code will open it automatically.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Fork a repository (on GitHub)</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Forking makes your own copy of someone else's repo on GitHub, so you can make changes without affecting the original. Forking is done on the GitHub website, not in the terminal.</p>
+          <ul class="sub-steps">
+            <li>Go to the repository on <strong>github.com</strong></li>
+            <li>Click the <strong>Fork</strong> button (top-right of the page)</li>
+            <li>Choose your account as the destination</li>
+            <li>Then clone YOUR fork locally: <code style="color:var(--accent);font-family:monospace">git clone https://github.com/YOUR-NAME/repo.git</code></li>
+          </ul>
+          <div class="warn-tip">After forking, add the original repo as "upstream" so you can sync updates from it: <code style="color:var(--accent3);font-family:monospace">git remote add upstream https://github.com/original/repo.git</code></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Sync your fork with the original</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Keep your fork up to date with the original project's latest changes.</p>
+          <div class="code-block">
+            <div class="code-label">Fetch and merge from upstream</div>
+            <code>git fetch upstream
+git checkout <span class="arg">main</span>
+git merge upstream/main
+git push <span class="comment"># update your fork on GitHub</span></code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLLABORATE -->
+  <div class="section clr-red" id="collab">
+    <div class="section-title">
+      <div class="section-icon">👥</div>
+      <div>
+        <h2>Collaborate</h2>
+        <p>Work with teammates — pull requests & live share</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Add a collaborator (on GitHub)</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Give another person push access to your repository.</p>
+          <ul class="sub-steps">
+            <li>Go to your repo on <strong>github.com</strong></li>
+            <li>Click <strong>Settings</strong> → <strong>Collaborators</strong></li>
+            <li>Click <strong>"Add people"</strong> → enter their GitHub username or email</li>
+            <li>They'll receive an invitation email to accept</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Create a Pull Request (PR)</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">A PR lets you propose changes and have teammates review them before merging into main.</p>
+          <ul class="sub-steps">
+            <li>Push your feature branch: <code style="color:var(--accent);font-family:monospace">git push origin feature/my-feature</code></li>
+            <li>Go to the repo on <strong>github.com</strong> — you'll see a "Compare & pull request" banner</li>
+            <li>Click it, add a title and description, then click <strong>"Create pull request"</strong></li>
+            <li>Teammates can review, comment, and approve</li>
+          </ul>
+          <div class="ui-tip">Install the <strong>GitHub Pull Requests</strong> VS Code extension to create and review PRs without leaving the editor.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Real-time collaboration — VS Code Live Share</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Code together in real-time like a Google Doc — your teammate sees and edits your code live.</p>
+          <ul class="sub-steps">
+            <li>Install the <strong>Live Share</strong> extension in VS Code</li>
+            <li>Click <strong>Live Share</strong> in the bottom status bar → <strong>Start Collaboration Session</strong></li>
+            <li>A link is copied to your clipboard — share it with your teammate</li>
+            <li>They click the link and join directly in their VS Code (or browser)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">Resolve merge conflicts with a teammate</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">When two people edit the same line, Git can't decide which to keep.</p>
+          <ul class="sub-steps">
+            <li>After a conflicted pull/merge, VS Code shows conflict markers inline</li>
+            <li>Click <strong>"Accept Current Change"</strong> (your code), <strong>"Accept Incoming"</strong> (their code), or <strong>"Accept Both"</strong></li>
+            <li>After resolving all conflicts: <code style="color:var(--accent);font-family:monospace">git add .</code> then <code style="color:var(--accent);font-family:monospace">git commit</code></li>
+          </ul>
+          <div class="ui-tip">VS Code's built-in 3-way merge editor (<strong>Open in Merge Editor</strong> button) makes conflict resolution much easier visually.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="section clr-purple" id="account">
+    <div class="section-title">
+      <div class="section-icon">🔑</div>
+      <div>
+        <h2>Add Account & Connect Repo</h2>
+        <p>Link GitHub to VS Code and push your first project</p>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step open">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">1</div>
+          <div class="step-title">Sign into GitHub in VS Code</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">VS Code has built-in GitHub authentication — no tokens needed.</p>
+          <ul class="sub-steps">
+            <li>Click the <strong>person icon</strong> in the bottom-left corner of VS Code</li>
+            <li>Click <strong>"Sign in with GitHub"</strong></li>
+            <li>A browser window opens — log into GitHub and click <strong>Authorize</strong></li>
+            <li>Return to VS Code — you're now signed in</li>
+          </ul>
+          <div class="ui-tip">Alternatively: open Source Control panel → click <strong>"Publish to GitHub"</strong> and it will prompt you to sign in automatically.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">2</div>
+          <div class="step-title">Create a new GitHub repo and push your project</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">The easiest way to start — VS Code creates the GitHub repo for you.</p>
+          <ul class="sub-steps">
+            <li>Open your project folder in VS Code</li>
+            <li>Open Source Control panel (<kbd>Ctrl+Shift+G</kbd>)</li>
+            <li>Click <strong>"Initialize Repository"</strong> → then <strong>"Publish Branch"</strong></li>
+            <li>VS Code asks: public or private repo — choose one</li>
+            <li>It creates the repo on GitHub and pushes all your code automatically!</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">3</div>
+          <div class="step-title">Connect existing local project to existing GitHub repo</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">Already have both? Link them manually.</p>
+          <div class="code-block">
+            <div class="code-label">Full workflow in terminal</div>
+            <code><span class="comment"># 1. Initialize repo (if not already done)</span>
+git init
+
+<span class="comment"># 2. Stage all files</span>
+git add .
+
+<span class="comment"># 3. Make first commit</span>
+git commit -m <span class="arg">"Initial commit"</span>
+
+<span class="comment"># 4. Rename branch to main (optional)</span>
+git branch -M main
+
+<span class="comment"># 5. Connect to GitHub remote</span>
+git remote add origin <span class="arg">https://github.com/YOU/REPO.git</span>
+
+<span class="comment"># 6. Push and set upstream</span>
+git push -u origin main</code>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-header" onclick="toggle(this)">
+          <div class="step-num">4</div>
+          <div class="step-title">Set up SSH key (avoid typing password every time)</div>
+          <div class="step-toggle">+</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">SSH lets you push/pull without entering your password each time.</p>
+          <div class="code-block">
+            <div class="code-label">Generate SSH key</div>
+            <code>ssh-keygen -t ed25519 -C <span class="arg">"you@example.com"</span>
+<span class="comment"># Press Enter for all prompts</span></code>
+          </div>
+          <div class="code-block">
+            <div class="code-label">Copy your public key</div>
+            <code><span class="comment"># Mac/Linux</span>
+cat ~/.ssh/id_ed25519.pub
+
+<span class="comment"># Windows</span>
+type %USERPROFILE%\.ssh\id_ed25519.pub</code>
+          </div>
+          <ul class="sub-steps">
+            <li>Go to <strong>github.com → Settings → SSH Keys → New SSH Key</strong></li>
+            <li>Paste the key and save</li>
+            <li>Change your remote URL to SSH: <code style="color:var(--accent);font-family:monospace">git remote set-url origin git@github.com:user/repo.git</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHEATSHEET -->
+  <div class="section clr-green" id="cheat">
+    <div class="section-title">
+      <div class="section-icon">⚡</div>
+      <div>
+        <h2>Quick Cheatsheet</h2>
+        <p>All commands at a glance</p>
+      </div>
+    </div>
+    <div class="step open">
+      <div class="step-header" onclick="toggle(this)">
+        <div class="step-num" style="font-size:16px">📋</div>
+        <div class="step-title">All Git Commands</div>
+        <div class="step-toggle">+</div>
+      </div>
+      <div class="step-body">
+        <table class="cheat-table">
+          <tr><th>Command</th><th>What it does</th></tr>
+          <tr><td>git init</td><td>Initialize a new local repo</td></tr>
+          <tr><td>git clone &lt;url&gt;</td><td>Copy a remote repo locally</td></tr>
+          <tr><td>git status</td><td>Show changed/staged files</td></tr>
+          <tr><td>git add .</td><td>Stage all changes</td></tr>
+          <tr><td>git add &lt;file&gt;</td><td>Stage a specific file</td></tr>
+          <tr><td>git commit -m "msg"</td><td>Save a snapshot with message</td></tr>
+          <tr><td>git push</td><td>Upload commits to remote</td></tr>
+          <tr><td>git push -u origin main</td><td>First push + set upstream</td></tr>
+          <tr><td>git pull</td><td>Download + merge remote changes</td></tr>
+          <tr><td>git fetch</td><td>Download remote changes (don't merge)</td></tr>
+          <tr><td>git branch</td><td>List all branches</td></tr>
+          <tr><td>git checkout -b &lt;name&gt;</td><td>Create + switch to new branch</td></tr>
+          <tr><td>git checkout &lt;name&gt;</td><td>Switch to existing branch</td></tr>
+          <tr><td>git merge &lt;branch&gt;</td><td>Merge branch into current</td></tr>
+          <tr><td>git rebase main</td><td>Replay commits on top of main</td></tr>
+          <tr><td>git rebase -i HEAD~3</td><td>Interactively edit last 3 commits</td></tr>
+          <tr><td>git rebase --continue</td><td>Continue after resolving conflict</td></tr>
+          <tr><td>git rebase --abort</td><td>Cancel and undo rebase</td></tr>
+          <tr><td>git remote add origin &lt;url&gt;</td><td>Connect to a remote repo</td></tr>
+          <tr><td>git remote -v</td><td>Show connected remotes</td></tr>
+          <tr><td>git log --oneline</td><td>Short commit history</td></tr>
+          <tr><td>git stash</td><td>Temporarily save uncommitted work</td></tr>
+          <tr><td>git stash pop</td><td>Restore stashed work</td></tr>
+          <tr><td>git reset --hard HEAD</td><td>Discard all local changes</td></tr>
+          <tr><td>git branch -d &lt;name&gt;</td><td>Delete a local branch</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  git status → add → commit → push &nbsp;·&nbsp; repeat forever
+</div>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggle(header) {
+    const step = header.parentElement;
+    step.classList.toggle('open');
+  }
+
+  // Copy button
+  document.querySelectorAll('.code-block').forEach(block => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    btn.onclick = () => {
+      const text = block.querySelector('code').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied!';
+        setTimeout(() => btn.textContent = 'copy', 1500);
+      });
+    };
+    block.appendChild(btn);
+  });
+</script>
+</body>
+</html>
